@@ -1,0 +1,59 @@
+{
+  "rule_id": "datn-pb03-r04",
+  "name": "PB03 R04 - Password spraying web",
+  "description": ">= 5 user.name khac nhau dang nhap that bai tu 1 source.ip trong 6 phut. T1110.003.",
+  "type": "threshold",
+  "index": [
+    "datn-web-*"
+  ],
+  "language": "kuery",
+  "query": "event.category:authentication and event.outcome:failure",
+  "severity": "high",
+  "risk_score": 63,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB03",
+    "R04",
+    "mode:automatic"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0006",
+        "name": "Credential Access",
+        "reference": "https://attack.mitre.org/tactics/TA0006/"
+      },
+      "technique": [
+        {
+          "id": "T1110",
+          "name": "Brute Force",
+          "reference": "https://attack.mitre.org/techniques/T1110/",
+          "subtechnique": [
+            {
+              "id": "T1110.003",
+              "name": "Password Spraying",
+              "reference": "https://attack.mitre.org/techniques/T1110/003/"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enabled": false,
+  "threshold": {
+    "field": [
+      "source.ip"
+    ],
+    "value": 1,
+    "cardinality": [
+      {
+        "field": "user.name",
+        "value": 5
+      }
+    ]
+  }
+}

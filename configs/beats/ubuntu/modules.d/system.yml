@@ -1,0 +1,13 @@
+# /etc/filebeat/modules.d/system.yml — auth.log + syslog -> datn-ubuntu-system-*
+# Đọc file (rsyslog), không đọc journald. Ubuntu bản minimal phải cài rsyslog.
+- module: system
+  syslog:
+    enabled: true
+    var.use_journald: false
+    input:
+      fields: { log_source: ubuntu-system }
+  auth:
+    enabled: true
+    var.use_journald: false
+    input:
+      fields: { log_source: ubuntu-system }

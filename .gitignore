@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.crt
+KEY/
+secrets/
+certs/
+data/
+password.txt
+__pycache__/
+*.py[cod]
+.DS_Store

@@ -1,0 +1,37 @@
+---
+config:
+  theme: base
+  themeVariables:
+    fontFamily: "Segoe UI, Arial, sans-serif"
+    fontSize: "17px"
+    lineColor: "#52677e"
+  flowchart:
+    htmlLabels: false
+    curve: basis
+    rankSpacing: 24
+    nodeSpacing: 28
+    padding: 8
+---
+flowchart TB
+    start(["Webhook của Shuffle"])
+    validate["Kiểm tra đầu vào, trùng lặp và allowlist"]
+    start --> validate --> assess["Làm giàu cảnh báo và kiểm tra cooldown"]
+    assess --> mode{"Nhánh xử lý"}
+    mode -->|"Bỏ qua theo điều kiện"| skipped["Kết thúc nhánh"]
+    mode -->|"Thông báo"| send["Gửi thông báo"]
+    mode -->|"Cần phê duyệt"| approval{"Analyst duyệt?"}
+    mode -->|"Tự động"| act["Ứng phó trong lab"]
+    approval -->|"Có"| act
+    approval -->|"Từ chối / chờ"| skipped
+    act --> verify["Hậu kiểm trạng thái trên thiết bị"] --> send
+    send --> record[("Ghi kết quả và bằng chứng")]
+    record --> metric["OPS3 tổng hợp theo batch"]
+
+    classDef input fill:#e0f2fe,stroke:#0369a1,color:#102a43,stroke-width:1.5px
+    classDef gate fill:#fef3c7,stroke:#b45309,color:#422606,stroke-width:1.5px
+    classDef action fill:#ede9fe,stroke:#6d28d9,color:#2e1b52,stroke-width:1.5px
+    classDef result fill:#e0f2f1,stroke:#087f75,color:#133631,stroke-width:1.5px
+    class start,validate,assess input
+    class mode,approval,skipped gate
+    class act,verify,send action
+    class record,metric result

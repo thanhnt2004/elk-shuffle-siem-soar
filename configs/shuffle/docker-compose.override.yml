@@ -1,0 +1,46 @@
+# Đặt cạnh docker-compose.yml của repo Shuffle (ở tag đã ghim). Cần Docker Compose >= 2.24.
+services:
+  frontend:
+    image: ghcr.io/shuffle/shuffle-frontend:${SHUFFLE_TAG}
+    ports: !override
+      - "${SHUFFLE_UI_BIND_IP:-127.0.0.1}:3001:80"
+
+  backend:
+    image: ghcr.io/shuffle/shuffle-backend:${SHUFFLE_TAG}
+    ports: !override
+      - "10.99.0.1:5001:5001"
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+    volumes:
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro   # để TZ có hiệu lực kể cả khi image thiếu tzdata
+
+  orborus:
+    image: ghcr.io/shuffle/shuffle-orborus:${SHUFFLE_TAG}
+    environment:
+      - BASE_URL=http://10.99.0.1:5001
+      - SHUFFLE_WORKER_IMAGE=ghcr.io/shuffle/shuffle-worker:${SHUFFLE_TAG}
+      - SHUFFLE_SWARM_CONFIG=run
+      - SHUFFLE_SCALE_REPLICAS=1
+      - SHUFFLE_ORBORUS_EXECUTION_CONCURRENCY=3
+      - DOCKER_API_VERSION=${DOCKER_API_VERSION}
+      # Shuffle >= 2.x tự dựng container tenzir-node (pipeline/syslog) mở 0.0.0.0:1514 và 5160, tốn ~250 MB RAM.
+      # DATN không dùng (log đi qua Logstash) -> tắt.
+      - SHUFFLE_SKIP_PIPELINES=true
+      - TZ=Asia/Ho_Chi_Minh
+    volumes:
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+
+  # Có từ Shuffle 2.3.0: giao diện phụ, bản gốc mở 0.0.0.0:3002 và 3444. DATN không dùng -> chỉ để ở VPN.
+  shuffle-security:
+    ports: !override
+      - "10.99.0.1:3002:80"
+
+  opensearch:
+    environment:
+      - OPENSEARCH_JAVA_OPTS=-Xms768m -Xmx768m
+    mem_limit: 1536m
+    ports: !reset []          # compose gốc publish 0.0.0.0:9200, trùng cổng Elasticsearch
+
+networks:
+  shuffle:
+    name: shuffle

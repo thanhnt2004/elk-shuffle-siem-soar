@@ -1,0 +1,46 @@
+{
+  "rule_id": "datn-pb05-r09",
+  "name": "PB05 R09 - Path traversal doc duoc file",
+  "description": "url.original co mau traversal, status 200 va than phan hoi > 1000 byte (co the da doc duoc file). Gom theo source.ip. T1190.",
+  "type": "threshold",
+  "index": [
+    "datn-web-*"
+  ],
+  "language": "kuery",
+  "query": "event.dataset:nginx.access and http.response.status_code:200 and http.response.body.bytes > 1000 and url.original:(*../..* or *..%2f* or *..%2F* or *%2e%2e* or *%2E%2E* or *etc/passwd* or *etc%2fpasswd* or *etc%2Fpasswd* or *win.ini* or *boot.ini*)",
+  "severity": "critical",
+  "risk_score": 85,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB05",
+    "R09",
+    "mode:automatic"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0001",
+        "name": "Initial Access",
+        "reference": "https://attack.mitre.org/tactics/TA0001/"
+      },
+      "technique": [
+        {
+          "id": "T1190",
+          "name": "Exploit Public-Facing Application",
+          "reference": "https://attack.mitre.org/techniques/T1190/"
+        }
+      ]
+    }
+  ],
+  "enabled": false,
+  "threshold": {
+    "field": [
+      "source.ip"
+    ],
+    "value": 1
+  }
+}

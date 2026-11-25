@@ -1,0 +1,53 @@
+{
+  "rule_id": "datn-pb23-r68",
+  "name": "PB23 R68 - Tat/doi audit policy Windows",
+  "description": "Security 4719 co thay doi loai bo (removed) hoac auditpol /clear|/remove|disable. Gom theo host.name. 4719 do chinh SOAR khoi phuc (chi them lai) khong khop. T1685.001.",
+  "type": "threshold",
+  "index": [
+    "datn-windows-*"
+  ],
+  "language": "kuery",
+  "query": "(event.code:4719 and winlog.channel:Security and winlog.event_data.AuditPolicyChanges:(*8448* or *8450* or *removed* or *Removed*)) or (event.code:1 and process.name:auditpol.exe and process.command_line:(*/clear* or */CLEAR* or */remove* or */REMOVE* or *disable*))",
+  "severity": "high",
+  "risk_score": 70,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB23",
+    "R68",
+    "mode:automatic"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0112",
+        "name": "Defense Impairment",
+        "reference": "https://attack.mitre.org/tactics/TA0112/"
+      },
+      "technique": [
+        {
+          "id": "T1685",
+          "name": "Disable or Modify Tools",
+          "reference": "https://attack.mitre.org/techniques/T1685/",
+          "subtechnique": [
+            {
+              "id": "T1685.001",
+              "name": "Disable or Modify Windows Event Log",
+              "reference": "https://attack.mitre.org/techniques/T1685/001/"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enabled": false,
+  "threshold": {
+    "field": [
+      "host.name"
+    ],
+    "value": 1
+  }
+}

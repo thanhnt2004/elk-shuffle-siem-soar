@@ -1,0 +1,47 @@
+{
+  "rule_id": "datn-pb03-r06",
+  "name": "PB03 R06 - Dang nhap duoc sau nhieu lan sai",
+  "description": "Theo source.ip: 5 lan dang nhap that bai roi 1 lan thanh cong trong 10 phut. T1110.001.",
+  "type": "eql",
+  "index": [
+    "datn-web-*"
+  ],
+  "language": "eql",
+  "query": "sequence by source.ip with maxspan=10m [authentication where event.outcome == \"failure\"] with runs=5 [authentication where event.outcome == \"success\"]",
+  "severity": "critical",
+  "risk_score": 85,
+  "from": "now-900s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB03",
+    "R06",
+    "mode:automatic"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0006",
+        "name": "Credential Access",
+        "reference": "https://attack.mitre.org/tactics/TA0006/"
+      },
+      "technique": [
+        {
+          "id": "T1110",
+          "name": "Brute Force",
+          "reference": "https://attack.mitre.org/techniques/T1110/",
+          "subtechnique": [
+            {
+              "id": "T1110.001",
+              "name": "Password Guessing",
+              "reference": "https://attack.mitre.org/techniques/T1110/001/"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enabled": false
+}

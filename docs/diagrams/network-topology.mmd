@@ -1,0 +1,44 @@
+---
+config:
+  theme: base
+  themeVariables:
+    fontFamily: "Segoe UI, Arial, sans-serif"
+    fontSize: "18px"
+    lineColor: "#52677e"
+  flowchart:
+    htmlLabels: false
+    curve: basis
+---
+flowchart LR
+    acc["Quản trị viên"]
+    subgraph lab["VMware Lab"]
+        direction TB
+        unix["Ubuntu • Filebeat"]
+        win["Windows • Winlogbeat"]
+        pf["pfSense • Gateway và firewall"]
+        unix --> pf
+        win --> pf
+    end
+    subgraph ec2["AWS EC2"]
+        direction TB
+        wg["WireGuard"]
+        elk["ELK • Logstash, Elasticsearch, Kibana"]
+        fw["Alert Forwarder"]
+        sf["Shuffle và OpenSearch"]
+        wg --> elk --> fw --> sf
+    end
+    tg["Telegram"]
+    lab -->|"Tunnel WireGuard"| ec2
+    acc -.->|"VPN hoặc SSH tunnel"| ec2
+    ec2 -->|"Thông báo"| tg
+
+    classDef labnode fill:#e0f2fe,stroke:#0369a1,color:#102a43,stroke-width:1.5px
+    classDef elasticnode fill:#e0f2f1,stroke:#087f75,color:#133631,stroke-width:1.5px
+    classDef automationnode fill:#ede9fe,stroke:#6d28d9,color:#2e1b52,stroke-width:1.5px
+    classDef externalnode fill:#fef3c7,stroke:#b45309,color:#422606,stroke-width:1.5px
+    class unix,win,pf,wg labnode
+    class elk elasticnode
+    class fw,sf automationnode
+    class acc,tg externalnode
+    style lab fill:#f3f8fc,stroke:#8ca5bf,color:#1e3852
+    style ec2 fill:#f4f7fb,stroke:#8ca5bf,color:#1e3852

@@ -1,0 +1,46 @@
+{
+  "rule_id": "datn-pb05-r07",
+  "name": "PB05 R07 - Mau SQLi / path traversal trong URL",
+  "description": "url.original chua mau SQLi hoac traversal (ke ca dang ma hoa %). Gom theo source.ip. T1190. Chi la dau hieu THU -> can nguoi duyet truoc khi chan.",
+  "type": "threshold",
+  "index": [
+    "datn-web-*"
+  ],
+  "language": "kuery",
+  "query": "event.dataset:nginx.access and url.original:(*union*select* or *UNION*SELECT* or *Union*Select* or *%27%20or%20* or *%27%20OR%20* or *%27+or+* or *%27+OR+* or *%20or%201%3D1* or *%20OR%201%3D1* or *or%201=1* or *OR%201=1* or *sleep\\(* or *SLEEP\\(* or *sleep%28* or *SLEEP%28* or *information_schema* or *INFORMATION_SCHEMA* or *benchmark%28* or *%27--* or *%27%23* or *../..* or *..%2f* or *..%2F* or *%2e%2e* or *%2E%2E* or *etc/passwd* or *etc%2fpasswd* or *etc%2Fpasswd* or *win.ini* or *boot.ini*)",
+  "severity": "high",
+  "risk_score": 65,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB05",
+    "R07",
+    "mode:approval"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0001",
+        "name": "Initial Access",
+        "reference": "https://attack.mitre.org/tactics/TA0001/"
+      },
+      "technique": [
+        {
+          "id": "T1190",
+          "name": "Exploit Public-Facing Application",
+          "reference": "https://attack.mitre.org/techniques/T1190/"
+        }
+      ]
+    }
+  ],
+  "enabled": false,
+  "threshold": {
+    "field": [
+      "source.ip"
+    ],
+    "value": 1
+  }
+}

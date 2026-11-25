@@ -1,0 +1,59 @@
+{
+  "rule_id": "datn-pb03-r05",
+  "name": "PB03 R05 - Credential stuffing web (dau hieu tu dong)",
+  "description": "That bai co dau hieu tu dong (khong cookie phien hoac UA script), >= 10 user.name khac nhau tu 1 source.ip trong 6 phut. T1110.004.",
+  "type": "threshold",
+  "index": [
+    "datn-web-*"
+  ],
+  "language": "kuery",
+  "query": "event.category:authentication and event.outcome:failure and (labels.cookie_present:false or user_agent.original:(*python-requests* or *curl/* or *Go-http-client* or *okhttp* or *libwww* or *Hydra* or *hydra*))",
+  "severity": "high",
+  "risk_score": 70,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB03",
+    "R05",
+    "mode:automatic"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0006",
+        "name": "Credential Access",
+        "reference": "https://attack.mitre.org/tactics/TA0006/"
+      },
+      "technique": [
+        {
+          "id": "T1110",
+          "name": "Brute Force",
+          "reference": "https://attack.mitre.org/techniques/T1110/",
+          "subtechnique": [
+            {
+              "id": "T1110.004",
+              "name": "Credential Stuffing",
+              "reference": "https://attack.mitre.org/techniques/T1110/004/"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enabled": false,
+  "threshold": {
+    "field": [
+      "source.ip"
+    ],
+    "value": 1,
+    "cardinality": [
+      {
+        "field": "user.name",
+        "value": 10
+      }
+    ]
+  }
+}

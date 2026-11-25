@@ -1,0 +1,25 @@
+name: forwarder
+
+services:
+  alert-forwarder:
+    image: python:3.12-slim
+    container_name: alert-forwarder
+    restart: unless-stopped
+    command: ["python", "-u", "/app/forwarder.py"]
+    env_file: .env
+    environment:
+      - ES_CA=/certs/ca.crt
+      - TZ=Asia/Ho_Chi_Minh
+      - STATE_FILE=/data/checkpoint.json
+    volumes:
+      - ./forwarder.py:/app/forwarder.py:ro
+      - ${DATN_ELK_CA_PATH:-../../configs/elk/certs/ca/ca.crt}:/certs/ca.crt:ro
+      - ./data:/data
+    mem_limit: 128m
+    networks: [elk, shuffle]
+
+networks:
+  elk:
+    external: true
+  shuffle:
+    external: true

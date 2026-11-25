@@ -1,0 +1,44 @@
+---
+config:
+  theme: base
+  themeVariables:
+    fontFamily: "Segoe UI, Arial, sans-serif"
+    fontSize: "17px"
+    lineColor: "#52677e"
+  flowchart:
+    htmlLabels: false
+    curve: basis
+---
+flowchart LR
+    subgraph sources["Nguồn log"]
+        direction TB
+        w["Windows Event Log và Sysmon<br/>Winlogbeat"]
+        u["Linux, Nginx và xác thực web<br/>Filebeat"]
+        p["Firewall và DNS pfSense<br/>Syslog"]
+    end
+    subgraph siem["Thu thập và phát hiện"]
+        direction TB
+        ls["Logstash<br/>Parse · ECS · định tuyến"]
+        e[("Elasticsearch<br/>Chỉ mục datn-*")]
+        kb["Elastic Security<br/>KQL · EQL · threshold"]
+        ls --> e --> kb
+    end
+    subgraph route["Chuyển cảnh báo"]
+        direction TB
+        a[("Chỉ mục cảnh báo")]
+        fw["Alert Forwarder"]
+        sf["Shuffle"]
+        a --> fw -->|"Webhook theo PB"| sf
+    end
+    sources -->|"Beats TLS hoặc syslog qua VPN"| siem
+    siem -->|"Ghi alert"| route
+
+    classDef source fill:#e0f2fe,stroke:#0369a1,color:#102a43,stroke-width:1.5px
+    classDef store fill:#e0f2f1,stroke:#087f75,color:#133631,stroke-width:1.5px
+    classDef workflow fill:#ede9fe,stroke:#6d28d9,color:#2e1b52,stroke-width:1.5px
+    class w,u,p source
+    class ls,e,kb,a store
+    class fw,sf workflow
+    style sources fill:#f3f8fc,stroke:#8ca5bf,color:#1e3852
+    style siem fill:#f4fbf9,stroke:#7dbbb0,color:#17463f
+    style route fill:#f7f3ff,stroke:#a58bdc,color:#35275b

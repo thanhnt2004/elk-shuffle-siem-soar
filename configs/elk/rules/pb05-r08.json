@@ -1,0 +1,40 @@
+{
+  "rule_id": "datn-pb05-r08",
+  "name": "PB05 R08 - SQLi gay loi 500 (dau hieu thanh cong)",
+  "description": "Theo source.ip: request khop mau SQLi roi phan hoi 500 trong 2 phut. T1190.",
+  "type": "eql",
+  "index": [
+    "datn-web-*"
+  ],
+  "language": "eql",
+  "query": "sequence by source.ip with maxspan=2m [any where event.dataset == \"nginx.access\" and url.original : (\"*union*select*\", \"*%27%20or%20*\", \"*%27+or+*\", \"*or%201%3D1*\", \"*or%201=1*\", \"*sleep(*\", \"*sleep%28*\", \"*information_schema*\")] [any where event.dataset == \"nginx.access\" and http.response.status_code == 500]",
+  "severity": "critical",
+  "risk_score": 82,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB05",
+    "R08",
+    "mode:automatic"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0001",
+        "name": "Initial Access",
+        "reference": "https://attack.mitre.org/tactics/TA0001/"
+      },
+      "technique": [
+        {
+          "id": "T1190",
+          "name": "Exploit Public-Facing Application",
+          "reference": "https://attack.mitre.org/techniques/T1190/"
+        }
+      ]
+    }
+  ],
+  "enabled": false
+}

@@ -1,0 +1,6 @@
+# /etc/filebeat/modules.d/auditd.yml — /var/log/audit/audit.log -> datn-ubuntu-audit-*
+- module: auditd
+  log:
+    enabled: true
+    input:
+      fields: { log_source: ubuntu-audit }

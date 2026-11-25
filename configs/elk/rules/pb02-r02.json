@@ -1,0 +1,53 @@
+{
+  "rule_id": "datn-pb02-r02",
+  "name": "PB02 R02 - Do thu muc web (404 flood)",
+  "description": "Mot source.ip tao >= 30 phan hoi 404 trong cua so 6 phut (wordlist scanning). T1595.003.",
+  "type": "threshold",
+  "index": [
+    "datn-web-*"
+  ],
+  "language": "kuery",
+  "query": "event.dataset:nginx.access and http.response.status_code:404",
+  "severity": "medium",
+  "risk_score": 47,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB02",
+    "R02",
+    "mode:automatic"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0043",
+        "name": "Reconnaissance",
+        "reference": "https://attack.mitre.org/tactics/TA0043/"
+      },
+      "technique": [
+        {
+          "id": "T1595",
+          "name": "Active Scanning",
+          "reference": "https://attack.mitre.org/techniques/T1595/",
+          "subtechnique": [
+            {
+              "id": "T1595.003",
+              "name": "Wordlist Scanning",
+              "reference": "https://attack.mitre.org/techniques/T1595/003/"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enabled": false,
+  "threshold": {
+    "field": [
+      "source.ip"
+    ],
+    "value": 30
+  }
+}

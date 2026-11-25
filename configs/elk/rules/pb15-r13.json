@@ -1,0 +1,40 @@
+{
+  "rule_id": "datn-pb15-r13",
+  "name": "PB15 R13 - Tai cong cu: ket noi ra roi tao file thuc thi",
+  "description": "Theo process.entity_id: Sysmon 3 (LOLBin ket noi ra ngoai LAN/VPN) roi Sysmon 11 tao file thuc thi trong 60s. T1105.",
+  "type": "eql",
+  "index": [
+    "datn-windows-*"
+  ],
+  "language": "eql",
+  "query": "sequence by process.entity_id with maxspan=60s [any where event.code == \"3\" and process.name : (\"powershell.exe\", \"pwsh.exe\", \"certutil.exe\", \"bitsadmin.exe\", \"curl.exe\", \"cmd.exe\", \"mshta.exe\", \"rundll32.exe\") and not cidrmatch(destination.ip, \"192.168.100.0/24\", \"10.99.0.0/24\", \"127.0.0.0/8\")] [any where event.code == \"11\" and file.extension : (\"exe\", \"dll\", \"ps1\", \"bat\", \"vbs\", \"hta\", \"scr\")]",
+  "severity": "high",
+  "risk_score": 70,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB15",
+    "R13",
+    "mode:approval"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0011",
+        "name": "Command and Control",
+        "reference": "https://attack.mitre.org/tactics/TA0011/"
+      },
+      "technique": [
+        {
+          "id": "T1105",
+          "name": "Ingress Tool Transfer",
+          "reference": "https://attack.mitre.org/techniques/T1105/"
+        }
+      ]
+    }
+  ],
+  "enabled": false
+}

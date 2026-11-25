@@ -1,0 +1,53 @@
+{
+  "rule_id": "datn-pb02-r03",
+  "name": "PB02 R03 - User-Agent cong cu quet web",
+  "description": "Request co User-Agent cua cong cu quet (Nikto, sqlmap, ffuf, gobuster, Nmap NSE, Nuclei...). Gom theo source.ip (threshold value 1) thay cho alert_suppression. T1595.002.",
+  "type": "threshold",
+  "index": [
+    "datn-web-*"
+  ],
+  "language": "kuery",
+  "query": "event.dataset:nginx.access and user_agent.original:(*Nikto* or *nikto* or *sqlmap* or *Fuzz?Faster?U?Fool* or *gobuster* or *Nmap?Scripting?Engine* or *Nuclei* or *nuclei* or *WPScan* or *feroxbuster* or *DirBuster* or *dirbuster* or *masscan* or *zgrab*)",
+  "severity": "high",
+  "risk_score": 60,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB02",
+    "R03",
+    "mode:automatic"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0043",
+        "name": "Reconnaissance",
+        "reference": "https://attack.mitre.org/tactics/TA0043/"
+      },
+      "technique": [
+        {
+          "id": "T1595",
+          "name": "Active Scanning",
+          "reference": "https://attack.mitre.org/techniques/T1595/",
+          "subtechnique": [
+            {
+              "id": "T1595.002",
+              "name": "Vulnerability Scanning",
+              "reference": "https://attack.mitre.org/techniques/T1595/002/"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enabled": false,
+  "threshold": {
+    "field": [
+      "source.ip"
+    ],
+    "value": 1
+  }
+}

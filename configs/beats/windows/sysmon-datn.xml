@@ -1,0 +1,90 @@
+<!--
+  Sysmon config DATN (Sysmon 15.x, schema 4.90). Pham vi lab: chi giu Event 1, 3, 11, 13
+  va registry 12/14. Loai on ao (5, 7, 10, 22...) dat "include" rong = khong ghi.
+  Cai:   Sysmon64.exe -accepteula -i sysmon-datn.xml
+  Doi:   Sysmon64.exe -c sysmon-datn.xml
+-->
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>sha256</HashAlgorithms>
+  <CheckRevocation>False</CheckRevocation>
+  <EventFiltering>
+
+    <!-- Event 1: ghi moi process (R11 -enc, R13 schtasks /create, R16) -->
+    <RuleGroup name="ProcessCreate" groupRelation="or">
+      <ProcessCreate onmatch="exclude">
+        <Image condition="is">C:\Windows\System32\conhost.exe</Image>
+        <Image condition="is">C:\Program Files\Winlogbeat\winlogbeat.exe</Image>
+      </ProcessCreate>
+    </RuleGroup>
+
+    <!-- Event 3: ket noi mang cua cac LOLBin (R10, R12) -->
+    <RuleGroup name="NetworkConnect" groupRelation="or">
+      <NetworkConnect onmatch="include">
+        <Image condition="end with">\powershell.exe</Image>
+        <Image condition="end with">\pwsh.exe</Image>
+        <Image condition="end with">\rundll32.exe</Image>
+        <Image condition="end with">\certutil.exe</Image>
+        <Image condition="end with">\bitsadmin.exe</Image>
+        <Image condition="end with">\mshta.exe</Image>
+        <Image condition="end with">\regsvr32.exe</Image>
+        <Image condition="end with">\cmd.exe</Image>
+        <Image condition="end with">\wscript.exe</Image>
+        <Image condition="end with">\cscript.exe</Image>
+      </NetworkConnect>
+    </RuleGroup>
+
+    <!-- Event 11: tao file thuc thi / script (R12) -->
+    <RuleGroup name="FileCreate" groupRelation="or">
+      <FileCreate onmatch="include">
+        <TargetFilename condition="end with">.exe</TargetFilename>
+        <TargetFilename condition="end with">.dll</TargetFilename>
+        <TargetFilename condition="end with">.ps1</TargetFilename>
+        <TargetFilename condition="end with">.bat</TargetFilename>
+        <TargetFilename condition="end with">.cmd</TargetFilename>
+        <TargetFilename condition="end with">.vbs</TargetFilename>
+        <TargetFilename condition="end with">.js</TargetFilename>
+        <TargetFilename condition="end with">.hta</TargetFilename>
+        <TargetFilename condition="contains">\DATN\</TargetFilename>
+        <TargetFilename condition="contains">\Windows\System32\Tasks\</TargetFilename>
+      </FileCreate>
+    </RuleGroup>
+
+    <!-- Event 12/13/14: registry persistence -->
+    <RuleGroup name="Registry" groupRelation="or">
+      <RegistryEvent onmatch="include">
+        <TargetObject condition="contains">\CurrentVersion\Run</TargetObject>
+        <TargetObject condition="contains">\Schedule\TaskCache\</TargetObject>
+        <TargetObject condition="contains">\CurrentControlSet\Services\</TargetObject>
+        <TargetObject condition="contains">\Winlogon\</TargetObject>
+      </RegistryEvent>
+    </RuleGroup>
+
+    <!-- Tat cac loai khong dung trong lab (include rong = khong ghi) -->
+    <RuleGroup groupRelation="or"><ProcessTerminate onmatch="include" /></RuleGroup>
+    <RuleGroup groupRelation="or"><ImageLoad onmatch="include" /></RuleGroup>
+    <!-- Event 10: tien trinh khac mo handle toi LSASS (T1003.001) -->
+<RuleGroup name="ProcessAccess" groupRelation="or">
+  <ProcessAccess onmatch="include">
+    <TargetImage condition="end with">\lsass.exe</TargetImage>
+  </ProcessAccess>
+</RuleGroup>
+    <RuleGroup groupRelation="or"><FileCreateTime onmatch="include" /></RuleGroup>
+    <RuleGroup groupRelation="or"><FileCreateStreamHash onmatch="include" /></RuleGroup>
+    <RuleGroup groupRelation="or"><PipeEvent onmatch="include" /></RuleGroup>
+<RuleGroup name="DnsQuery" groupRelation="or">
+  <DnsQuery onmatch="exclude">
+    <QueryName condition="end with">.microsoft.com</QueryName>
+    <QueryName condition="end with">.windowsupdate.com</QueryName>
+    <QueryName condition="end with">.msftncsi.com</QueryName>
+    <QueryName condition="end with">.windows.com</QueryName>
+    <Image condition="end with">\winlogbeat.exe</Image>
+  </DnsQuery>
+</RuleGroup>
+
+    <RuleGroup groupRelation="or"><FileDelete onmatch="include" /></RuleGroup>
+    <RuleGroup groupRelation="or"><FileDeleteDetected onmatch="include" /></RuleGroup>
+    <RuleGroup groupRelation="or"><ClipboardChange onmatch="include" /></RuleGroup>
+    <RuleGroup groupRelation="or"><RawAccessRead onmatch="include" /></RuleGroup>
+
+  </EventFiltering>
+</Sysmon>

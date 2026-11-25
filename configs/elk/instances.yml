@@ -1,0 +1,7 @@
+instances:
+  - name: elasticsearch
+    dns: [elasticsearch, localhost]
+    ip: [127.0.0.1, 10.99.0.1]
+  - name: logstash
+    dns: [logstash, localhost]
+    ip: [10.99.0.1]

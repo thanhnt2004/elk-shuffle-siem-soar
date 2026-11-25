@@ -1,0 +1,40 @@
+{
+  "rule_id": "datn-pb15-r14",
+  "name": "PB15 R14 - LOLBin tai file thuc thi (certutil/bitsadmin/IWR)",
+  "description": "Sysmon 1: certutil -urlcache, bitsadmin /transfer, Invoke-WebRequest/curl -OutFile toi file thuc thi. T1105.",
+  "type": "query",
+  "index": [
+    "datn-windows-*"
+  ],
+  "language": "kuery",
+  "query": "event.code:1 and ((process.name:certutil.exe and process.command_line:(*urlcache* or *URLCache* or *-split* or *verifyctl*)) or (process.name:bitsadmin.exe and process.command_line:(*transfer* or *TRANSFER* or *addfile*)) or (process.name:(powershell.exe or pwsh.exe) and process.command_line:(*Invoke-WebRequest* or *invoke-webrequest* or *iwr?* or *wget?* or *curl?* or *Start-BitsTransfer*) and process.command_line:(*-OutFile* or *-outfile* or *-o?* or *-Destination*))) and process.command_line:(*.exe* or *.dll* or *.ps1* or *.bat* or *.hta* or *.vbs* or *.scr*)",
+  "severity": "high",
+  "risk_score": 65,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB15",
+    "R14",
+    "mode:approval"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0011",
+        "name": "Command and Control",
+        "reference": "https://attack.mitre.org/tactics/TA0011/"
+      },
+      "technique": [
+        {
+          "id": "T1105",
+          "name": "Ingress Tool Transfer",
+          "reference": "https://attack.mitre.org/techniques/T1105/"
+        }
+      ]
+    }
+  ],
+  "enabled": false
+}

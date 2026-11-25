@@ -1,0 +1,47 @@
+{
+  "rule_id": "datn-pb23-r67",
+  "name": "PB23 R67 - Xoa log Windows",
+  "description": "Security 1102 (xoa Security log) hoac System 104 (xoa log khac). Log da ve ELK truoc khi bi xoa. T1685.005.",
+  "type": "query",
+  "index": [
+    "datn-windows-*"
+  ],
+  "language": "kuery",
+  "query": "(event.code:1102 and winlog.channel:Security) or (event.code:104 and winlog.channel:System)",
+  "severity": "high",
+  "risk_score": 73,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB23",
+    "R67",
+    "mode:approval"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0112",
+        "name": "Defense Impairment",
+        "reference": "https://attack.mitre.org/tactics/TA0112/"
+      },
+      "technique": [
+        {
+          "id": "T1685",
+          "name": "Disable or Modify Tools",
+          "reference": "https://attack.mitre.org/techniques/T1685/",
+          "subtechnique": [
+            {
+              "id": "T1685.005",
+              "name": "Clear Windows Event Logs",
+              "reference": "https://attack.mitre.org/techniques/T1685/005/"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enabled": false
+}

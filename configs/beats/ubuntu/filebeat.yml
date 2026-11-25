@@ -1,0 +1,66 @@
+# /etc/filebeat/filebeat.yml — Ubuntu ubuntu-server-elk (192.168.100.103)
+# Filebeat 9.5.4 -> Logstash 10.99.0.1:5044 (TLS) qua pfSense + WireGuard.
+# fields.log_source là khóa định tuyến của Logstash (datn.conf). Gõ sai -> datn-unknown-*.
+
+filebeat.inputs:
+  # Nginx access log JSON (log_format datn_json trong /etc/nginx/conf.d/datn-log.conf)
+  - type: filestream
+    id: nginx-json
+    paths: [/var/log/nginx/access.json]
+    parsers:
+      - ndjson:
+          target: ""
+          overwrite_keys: true
+          expand_keys: true        # "source.ip" -> source.ip (object ECS)
+          add_error_key: true
+    fields: { log_source: web-nginx }
+    processors:
+      - timestamp:
+          field: event_time
+          layouts: ['2006-01-02T15:04:05Z07:00', '2006-01-02T15:04:05.999999Z07:00']
+          ignore_missing: true
+      - drop_fields: { fields: [event_time], ignore_missing: true }
+
+  # Log đăng nhập Flaskr JSON (một dòng JSON / lần đăng nhập, KHÔNG ghi password)
+  - type: filestream
+    id: flaskr-auth
+    paths: [/var/log/flaskr/auth.json]
+    parsers:
+      - ndjson:
+          target: ""
+          overwrite_keys: true
+          expand_keys: true
+          add_error_key: true
+    fields: { log_source: web-auth }
+    processors:
+      - timestamp:
+          field: event_time
+          layouts: ['2006-01-02T15:04:05Z07:00', '2006-01-02T15:04:05.999999Z07:00']
+          ignore_missing: true
+      - drop_fields: { fields: [event_time], ignore_missing: true }
+
+# Module system + auditd: Filebeat tự gắn @metadata.pipeline, Logstash dùng nó
+# để gọi ingest pipeline filebeat-9.5.4-* (đã nạp bằng load-beats-pipelines.sh).
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+processors:
+  - add_host_metadata: ~
+
+# Hàng đợi trên đĩa: mất VPN vài phút không mất log.
+queue.disk:
+  max_size: 512MB
+
+output.logstash:
+  hosts: ["10.99.0.1:5044"]
+  ssl.enabled: true
+  ssl.certificate_authorities: ["/etc/filebeat/ca.crt"]
+  ssl.verification_mode: full
+  timeout: 30s
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  keepfiles: 5
