@@ -35,6 +35,8 @@ bash scripts/elk/load-beats-pipelines.sh
 
 Cài Filebeat và Winlogbeat theo phiên bản ELK. Dùng [cấu hình Beats](../configs/beats/) và sao chép chứng chỉ CA công khai của lab tới đường dẫn tương ứng của từng agent. Nạp pipeline Winlogbeat vào Elasticsearch trước khi chuyển output của Winlogbeat sang Logstash. Trỏ syslog pfSense tới listener UDP 5514 trên VPN. Kiểm tra log từng nguồn trong Kibana Discover bằng data view `datn-*`.
 
+Các [rule JSON](../configs/elk/rules/) gồm 16 rule của đợt triển khai 24–25/11, trong đó R37 thuộc PB16 và R43, R44 thuộc PB31. File mẫu để `enabled: false` để người vận hành đối chiếu data view, trường log và workflow trước khi bật trong môi trường riêng.
+
 ## Kết nối Shuffle và forwarder
 
 1. Đặt [Compose override](../configs/shuffle/docker-compose.override.yml) cạnh Compose gốc của Shuffle theo tag trong [mẫu cấu hình](../configs/shuffle/.env.example), rồi điền những biến phù hợp vào `.env` của Shuffle. Xác nhận tên mạng `shuffle` và quyền kết nối tới máy lab trước khi thêm hành động ứng phó.

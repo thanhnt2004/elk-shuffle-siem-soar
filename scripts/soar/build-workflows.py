@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dung (hoac cap nhat) 6 workflow Shuffle cho PB02, PB03, PB05, PB15, PB18, PB23.
+"""Dung (hoac cap nhat) 8 workflow Shuffle cho PB02, PB03, PB05, PB15, PB16, PB18, PB23, PB31.
 
 Chay tren EC2 (user ubuntu):  python3 /opt/datn/src/soar/build-workflows.py [PB02 PB03 ...]
 In ra JSON {PBnn: {workflow, hook, webhook_internal}} de dien WEBHOOK_PBnn trong forwarder.
@@ -214,7 +214,8 @@ SPECS = {
             "verify": [("verify", PF) + pf_verify("soar_egress", "$enrich.output.dest_ip")]}}},
     "PB31": {
         "title": "Đóng gói & tuồn dữ liệu", "icon": "📦", "entity_field": "host.name", "allowlist": False,
-        "chain_field": "$enrich.output.exfil_os",
+        "chain_field": "$enrich.output.exfil_os", "single_approval": True,
+        "approval_action": "Cách ly file nén + pfSense soar_egress chặn đích {dest}",
         "chains": {
             "Ubuntu": {"mode": "approval", "sfx": "_u",
                 "action": "Cách ly {archive} (Ubuntu) + pfSense soar_egress {dest} ttl=7200s",
@@ -275,6 +276,22 @@ def build(api, b, pb, spec):
         br.append(b.branch(head, n, hcond))
         head, hcond, col = n, [], col + 1
 
+    # Shuffle 2.3.0 chi chiu duoc MOT node User Input moi workflow: hai nhanh cung approval thi nhanh
+    # bi SKIPPED lam node con lai bao "Already Clicked" -> 500. Voi single_approval, duyet MOT lan
+    # truoc khi re nhanh (PB31: duyet roi moi re theo HDH).
+    shared_ui = None
+    if spec.get("single_approval"):
+        scfg = dict(base_cfg, action=spec.get("approval_action", "phan ung"), verify=[],
+                    notify_label="", approve_label="approve_s", hash_label="hash" if spec.get("pre") else "")
+        ent = "$exec.source_ip" if spec["entity_field"] == "source.ip" else "$exec.host_name"
+        ui_s = b.user_input("approve_s", f"{pb} {spec['title']}: duyet hanh dong cho alert $exec.alert_id ($exec.rule_id, {ent})?", (col + 1) * X, 300)
+        scfg["ui_id"] = ui_s["id"]
+        req_s = add(b.ssh("notify_req_s", "10.99.0.1", "ubuntu", KEY_EC2, notify_cmd(scfg, "request"), col * X, 300))
+        br.append(b.branch(head, req_s, hcond))
+        trigs.append(ui_s)
+        br.append(b.branch(req_s, ui_s))
+        head, hcond, col, shared_ui = ui_s, [], col + 2, ui_s["id"]
+
     if len(spec["chains"]) > 1:
         # Moi nhanh chi mot dieu kien. Chon nhanh theo chain_field: mac dinh la che do phan ung,
         # nhung PB co the re theo truong enrich khac (PB31 re theo HDH: $enrich.output.exfil_os).
@@ -293,11 +310,14 @@ def build(api, b, pb, spec):
             mcond = [(gate_field, "equals", key)]
         cfg = dict(base_cfg, action=ch["action"],
                    verify=[[lbl + sfx, exp] for lbl, _h, _c, exp in ch["verify"]],
-                   notify_label="notify" + sfx, approve_label="approve" + sfx,
+                   notify_label="notify" + sfx, approve_label="approve_s" if shared_ui else "approve" + sfx,
                    hash_label="hash" if spec.get("pre") else "")
         last = head
         first_cond = mcond
-        if mode == "approval":
+        if shared_ui:
+            cfg["ui_id"] = shared_ui
+            ui_ids[key] = shared_ui
+        if mode == "approval" and not shared_ui:
             ent = "$exec.source_ip" if spec["entity_field"] == "source.ip" else "$exec.host_name"
             ui = b.user_input("approve" + sfx, f"{pb} {spec['title']}: duyet hanh dong cho alert $exec.alert_id ($exec.rule_id, {ent})?", (c + 1) * X, y)
             cfg["ui_id"] = ui["id"]

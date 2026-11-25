@@ -1,0 +1,62 @@
+{
+  "rule_id": "datn-pb31-r44",
+  "name": "PB31 R44 - Nen roi tuon du lieu (Windows)",
+  "description": "Theo host.name: 4104 Compress-Archive roi 4104 Invoke-WebRequest/RestMethod hoac Net.WebClient trong 10 phut. Chay rieng tung lenh thi moi lenh la mot script block. T1560.001 + T1041.",
+  "type": "eql",
+  "index": [
+    "datn-windows-*"
+  ],
+  "language": "eql",
+  "query": "sequence by host.name with maxspan=10m [any where event.code == \"4104\" and powershell.file.script_block_text like~ \"*compress-archive*\"] [any where event.code == \"4104\" and (powershell.file.script_block_text like~ \"*invoke-webrequest*\" or powershell.file.script_block_text like~ \"*invoke-restmethod*\" or powershell.file.script_block_text like~ \"*net.webclient*\" or powershell.file.script_block_text like~ \"*uploadfile*\")]",
+  "severity": "critical",
+  "risk_score": 82,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB31",
+    "R44",
+    "mode:approval"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0010",
+        "name": "Exfiltration",
+        "reference": "https://attack.mitre.org/tactics/TA0010/"
+      },
+      "technique": [
+        {
+          "id": "T1041",
+          "name": "Exfiltration Over C2 Channel",
+          "reference": "https://attack.mitre.org/techniques/T1041/"
+        }
+      ]
+    },
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0009",
+        "name": "Collection",
+        "reference": "https://attack.mitre.org/tactics/TA0009/"
+      },
+      "technique": [
+        {
+          "id": "T1560",
+          "name": "Archive Collected Data",
+          "reference": "https://attack.mitre.org/techniques/T1560/",
+          "subtechnique": [
+            {
+              "id": "T1560.001",
+              "name": "Archive via Utility",
+              "reference": "https://attack.mitre.org/techniques/T1560/001/"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enabled": false
+}

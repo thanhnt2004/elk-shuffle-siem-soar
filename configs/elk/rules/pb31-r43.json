@@ -1,0 +1,69 @@
+{
+  "rule_id": "datn-pb31-r43",
+  "name": "PB31 R43 - Nen roi tuon du lieu (Ubuntu)",
+  "description": "Theo host.name: SYSCALL execve tar/zip/gzip roi SYSCALL execve nc/scp/socat/curl... trong 10 phut. process.name lay tu ban ghi SYSCALL (EXECVE bi mang hoa hex). T1560.001 + T1048.003.",
+  "type": "eql",
+  "index": [
+    "datn-ubuntu-audit-*"
+  ],
+  "language": "eql",
+  "query": "sequence by host.name with maxspan=10m [process where event.action == \"syscall\" and process.name in (\"tar\",\"zip\",\"gzip\",\"7z\",\"7za\",\"bzip2\",\"xz\",\"zstd\")] [process where event.action == \"syscall\" and process.name in (\"nc\",\"ncat\",\"scp\",\"sftp\",\"socat\",\"curl\",\"wget\")]",
+  "severity": "critical",
+  "risk_score": 82,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB31",
+    "R43",
+    "mode:approval"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0010",
+        "name": "Exfiltration",
+        "reference": "https://attack.mitre.org/tactics/TA0010/"
+      },
+      "technique": [
+        {
+          "id": "T1048",
+          "name": "Exfiltration Over Alternative Protocol",
+          "reference": "https://attack.mitre.org/techniques/T1048/",
+          "subtechnique": [
+            {
+              "id": "T1048.003",
+              "name": "Exfiltration Over Unencrypted Non-C2 Protocol",
+              "reference": "https://attack.mitre.org/techniques/T1048/003/"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0009",
+        "name": "Collection",
+        "reference": "https://attack.mitre.org/tactics/TA0009/"
+      },
+      "technique": [
+        {
+          "id": "T1560",
+          "name": "Archive Collected Data",
+          "reference": "https://attack.mitre.org/techniques/T1560/",
+          "subtechnique": [
+            {
+              "id": "T1560.001",
+              "name": "Archive via Utility",
+              "reference": "https://attack.mitre.org/techniques/T1560/001/"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enabled": false
+}

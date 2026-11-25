@@ -1,0 +1,68 @@
+{
+  "rule_id": "datn-pb16-r37",
+  "name": "PB16 R37 - Reverse shell Linux (mau lenh)",
+  "description": "auditd.log.proctitle chua mau reverse shell: /dev/tcp, /dev/udp, mkfifo, socat exec, nc/ncat -e, python socket connect, pty.spawn. Gom theo host.name. T1059.004.",
+  "type": "threshold",
+  "index": [
+    "datn-ubuntu-audit-*"
+  ],
+  "language": "kuery",
+  "query": "event.action:proctitle and auditd.log.proctitle:(*dev/tcp/* or *dev/udp/* or *mkfifo* or (*socat* and *exec*) or (*python* and *socket* and *connect*) or (*python* and *pty* and *spawn*) or (*perl* and *socket* and *exec*) or (*ruby* and *socket* and *exec*) or (*ncat* and *lua* and *exec*))",
+  "severity": "critical",
+  "risk_score": 85,
+  "from": "now-360s",
+  "interval": "1m",
+  "max_signals": 100,
+  "tags": [
+    "DATN",
+    "PB16",
+    "R37",
+    "mode:automatic"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0002",
+        "name": "Execution",
+        "reference": "https://attack.mitre.org/tactics/TA0002/"
+      },
+      "technique": [
+        {
+          "id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "reference": "https://attack.mitre.org/techniques/T1059/",
+          "subtechnique": [
+            {
+              "id": "T1059.004",
+              "name": "Unix Shell",
+              "reference": "https://attack.mitre.org/techniques/T1059/004/"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0011",
+        "name": "Command and Control",
+        "reference": "https://attack.mitre.org/tactics/TA0011/"
+      },
+      "technique": [
+        {
+          "id": "T1571",
+          "name": "Non-Standard Port",
+          "reference": "https://attack.mitre.org/techniques/T1571/"
+        }
+      ]
+    }
+  ],
+  "enabled": false,
+  "threshold": {
+    "field": [
+      "host.name"
+    ],
+    "value": 1
+  }
+}

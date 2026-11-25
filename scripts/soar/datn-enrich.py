@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Lam giau alert cho 6 playbook SOAR (DATN): PB02, PB03, PB05, PB15, PB18, PB23.
+"""Lam giau alert cho 8 playbook SOAR (DATN): PB02, PB03, PB05, PB15, PB16, PB18, PB23, PB31.
 
 Shuffle goi qua SSH (ubuntu@10.99.0.1), tham so la payload forwarder da base64:
     python3 -I /opt/datn/src/soar/datn-enrich.py <PBnn> <payload_base64>
@@ -34,8 +34,13 @@ EXEC_EXT = (".exe", ".dll", ".ps1", ".bat", ".vbs", ".hta", ".scr", ".cmd")
 # PB15/PB18/PB23 = 0: moi file/task/lan xoa log la mot su co rieng; R68 chi khop thay doi "removed"
 # nen buoc khoi phuc cua SOAR khong tu kich hoat lai.
 COOLDOWN = {"PB02": 120, "PB03": 120, "PB05": 120, "PB15": 0, "PB18": 0, "PB23": 0,
-            "PB16": 60, "PB31": 60}
+            "PB16": 0, "PB31": 0}   # PB16/PB31: moi lan reverse shell/tuon du lieu la su co rieng
 VN = timezone(timedelta(hours=7))
+
+
+def proctitle_tokens(text):
+    """Split either form of the audit argument separator."""
+    return [token for token in re.split(r"\x00|\^@", text) if token]
 
 
 def pick_dest_ip(text):
@@ -323,7 +328,7 @@ def pb16(es, alert, start, payload):
     port = None
     if not dest:
         dest, port = pf_dest_from_lan(es, hip, start)
-    cmd = pts[0].replace("\x00", " ") if pts else ""
+    cmd = " ".join(proctitle_tokens(pts[0])) if pts else ""
     if not dest:
         return {"ok": False, "reason": "khong xac dinh duoc IP C2 cua reverse shell",
                 "entity_field": "host.name", "entity_value": host, "host_ip": hip or ""}
@@ -359,19 +364,30 @@ def pb31(es, alert, start, payload):
             dest = pick_dest_ip(dest)
         qpath = archive
     else:   # R43 Ubuntu
-        r = es.search("datn-ubuntu-audit-*", {"size": 30, "sort": [{"@timestamp": "desc"}],
+        ARCH = {"tar", "zip", "gzip", "7z", "7za", "bzip2", "xz", "zstd"}
+        SEND = {"nc", "ncat", "scp", "sftp", "socat", "curl", "wget"}
+        # EQL sequence maxspan 10m -> kibana.alert.start lech xa thoi diem tan cong; tim theo THOI DIEM
+        # enrich chay (now), loc truc tiep cac ban ghi proctitle cua lenh nen/gui.
+        enr_now = datetime.now(timezone.utc)
+        r = es.search("datn-ubuntu-audit-*", {"size": 60, "sort": [{"@timestamp": "desc"}],
                                               "_source": ["auditd.log.proctitle"],
-                                              "query": {"bool": {"filter": [{"term": {"host.name": host}}, {"term": {"event.action": "proctitle"}},
-                                                                            rng(start, timedelta(minutes=12), timedelta(minutes=1))]}}})
-        pts = [get(h["_source"], "auditd.log.proctitle") or "" for h in r["hits"]["hits"]]
-        for p in pts:
-            low = p.lower()
-            if not archive and any(k in low for k in ("tar", "zip", "gzip")):
-                m = re.search(r"(/tmp/[^\x00]+|/var/tmp/[^\x00]+|/dev/shm/[^\x00]+)", p)
-                if m:
-                    archive = m.group(1).split("\x00")[0]
-            if not dest and any(k in low for k in ("nc\x00", "ncat", "scp", "socat", "curl", "wget")):
-                dest = pick_dest_ip(p)
+                                              "query": {"bool": {"filter": [
+                                                  {"term": {"host.name": host}}, {"term": {"event.action": "proctitle"}},
+                                                  {"range": {"@timestamp": {"gte": (enr_now - timedelta(minutes=12)).isoformat(),
+                                                                            "lte": (enr_now + timedelta(minutes=1)).isoformat()}}}],
+                                                  "should": [{"wildcard": {"auditd.log.proctitle": f"*{k}*"}} for k in sorted(ARCH | SEND)],
+                                                  "minimum_should_match": 1}}})
+        # Phan tich theo TOKEN: proctitle la cac arg phan tach boi NULL. archive lay tu lenh nen (arg0 in ARCH,
+        # tranh bash wrapper); dest lay tu lenh gui (co the bi boc "timeout N nc ..." nen quet moi token).
+        for p in r["hits"]["hits"]:
+            toks = proctitle_tokens(get(p["_source"], "auditd.log.proctitle") or "")
+            if not toks:
+                continue
+            progs = {t.rsplit("/", 1)[-1] for t in toks}
+            if not archive and toks[0].rsplit("/", 1)[-1] in ARCH:
+                archive = next((a for a in toks[1:] if a.startswith(("/tmp/", "/var/tmp/", "/dev/shm/"))), None)
+            if not dest and (progs & SEND):
+                dest = next(filter(None, map(pick_dest_ip, toks)), None)
         if not dest:
             dest, _ = pf_dest_from_lan(es, hip, start)
         qpath = archive if archive and archive.startswith(("/tmp/", "/var/tmp/", "/dev/shm/")) else None
@@ -396,7 +412,7 @@ def main():
     out = {"ok": False, "playbook_id": pb}
     try:
         if pb not in HANDLERS or len(sys.argv) != 3:
-            raise ValueError("dung: datn-enrich.py <PB02|PB03|PB05|PB15|PB18|PB23> <payload_base64>")
+            raise ValueError(f"dung: datn-enrich.py <{'|'.join(HANDLERS)}> <payload_base64>")
         payload = json.loads(base64.b64decode(sys.argv[2], validate=True))
         if payload.get("playbook_id") != pb:
             raise ValueError("playbook_id trong payload khong khop")

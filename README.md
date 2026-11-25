@@ -10,8 +10,8 @@
 | --- | --- |
 | Thu thập log | Tài liệu hạ tầng ghi nhận dữ liệu Windows, Ubuntu, Nginx và pfSense trong Elasticsearch. |
 | PB01 | Có biên bản đầu cuối cho một ca đối chứng bằng lưu lượng thật và một ca dương tính bằng log giả lập. |
-| PB02, PB03, PB05, PB15, PB18, PB23 | Tài liệu ngày 24–25/11/2026 ghi nhận đã triển khai. Ô minh chứng từng ca để trống. |
-| PB16, PB31 | Có mã sinh rule và workflow. Ô kết quả triển khai để trống. |
+| Đợt triển khai 24–25/11/2026 | Biên bản ghi nhận 8 workflow và 16 rule trong đợt này, ngoài luồng PB01 đã có từ trước. |
+| Kiểm thử ứng phó | 30 lượt qua hậu kiểm ở PB02, PB03, PB05, PB16, PB18, PB23 và PB31. PB15 đã triển khai, còn thiếu biên bản E2E trong đợt này. |
 
 Xem [kết quả và cách đo](docs/results.md) và [các mục còn trống](docs/pending.md).
 

@@ -7,7 +7,9 @@
 3. Phân nhánh thông báo, ứng phó tự động hoặc chờ phê duyệt tùy playbook và rule.
 4. Hậu kiểm trạng thái trên thiết bị khi có hành động. Gửi thông báo và ghi kết quả để OPS3 tổng hợp.
 
-PB01 là luồng thông báo với một bước ghi bằng chứng sau Telegram theo biên bản ngày 24/11. Nhánh dừng sớm trong PB01 có phạm vi ghi kết quả riêng. Sơ đồ thể hiện luồng chung của các playbook.
+PB01 là luồng thông báo với một bước ghi bằng chứng sau Telegram theo biên bản ngày 24/11. Nhánh dừng sớm trong PB01 có phạm vi ghi kết quả riêng.
+
+PB31 dùng chung một nút User Input cho cả Ubuntu và Windows. Sau khi được duyệt, workflow chọn nhánh theo hệ điều hành và ghi kết quả kèm ID của bước duyệt. PB16 chạy tự động và đối chiếu việc chặn kết nối ra qua log pfSense. [Minh chứng PB16 và PB31](../../docs/evidence/pb16-pb31/2026-11-25.md).
 
 ## Tệp cấu hình
 

@@ -14,12 +14,11 @@ Các số liệu PB01 dưới đây được trích từ biên bản kiểm th�
 
 Tiêu chí phân loại trong Preview và kiểm thử đầu cuối thuộc hai tập ca riêng. Kết quả 4/6 ca dương tính trong Preview mô tả bộ mẫu đó.
 
-## Các playbook còn lại
+## Kết quả triển khai 24–25/11/2026
 
-| Nhóm | Biên bản và kết quả từng ca |
-| --- | --- |
-| PB02, PB03, PB05, PB15, PB18, PB23 | |
-| PB16, PB31 | |
+Biên bản ghi nhận **30 lượt ứng phó đã qua hậu kiểm** ở 7 playbook. Số này được đếm từ bản ghi terminal có `result: success` và `verified: true` trong `datn-soar-results`. PB31 có kết quả trên cả Ubuntu và Windows. PB15 đã triển khai và còn thiếu số liệu E2E trong đợt báo cáo.
+
+[Bảng kết quả theo rule và chỉ số OPS3](evidence/six-playbooks/2026-11-25.md) · [Minh chứng PB16 và PB31](evidence/pb16-pb31/2026-11-25.md).
 
 ## Cách đo của OPS3
 
