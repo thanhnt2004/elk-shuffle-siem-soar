@@ -51,5 +51,3 @@ configs/        ELK, rule Elastic, Beats và Shuffle
 scripts/        Forwarder, rule generator, OPS3 và trình xử lý phòng thủ
 screenshots/    Ảnh bìa, sơ đồ và thư mục dành cho ảnh nghiệm thu
 ```
-
-[Bản repo dùng để tham khảo cách tổ chức](https://github.com/phuonguyen65/soc-soar-lab).
